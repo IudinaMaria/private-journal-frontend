@@ -8,28 +8,37 @@ export default function AuthForm({ onAuthSuccess }) {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const endpoint = isRegister ? "/api/register" : "/api/login";
+  e.preventDefault();
+  setError(""); // сброс ошибки
 
-    try {
-      const res = await axios.post(`https://private-journal-backend.onrender.com${endpoint}`, {
-        email,
-        password,
-      });
+  if (!email.trim() || !password.trim()) {
+    setError("Заполните все поля");
+    return;
+  }
 
-      if (!isRegister && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        onAuthSuccess();
-      }
+  const endpoint = isRegister ? "/api/register" : "/api/login";
 
-      if (isRegister) {
-        alert("Регистрация успешна! Теперь войдите.");
-        setIsRegister(false);
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || "Ошибка при авторизации");
+  try {
+    const res = await axios.post(
+      `https://private-journal-backend.onrender.com${endpoint}`,
+      { email, password },
+      { headers: { "Content-Type": "application/json" } } // 👈 уточним явный заголовок
+    );
+
+    if (!isRegister && res.data.token) {
+      localStorage.setItem("token", res.data.token);
+      onAuthSuccess();
     }
-  };
+
+    if (isRegister) {
+      alert("Регистрация успешна! Теперь войдите.");
+      setIsRegister(false);
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || "Ошибка при авторизации");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
