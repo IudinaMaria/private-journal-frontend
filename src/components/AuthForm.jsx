@@ -8,37 +8,36 @@ export default function AuthForm({ onAuthSuccess }) {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(""); // сброс ошибки
+    e.preventDefault();
+    setError("");
 
-  if (!email.trim() || !password.trim()) {
-    setError("Заполните все поля");
-    return;
-  }
-
-  const endpoint = isRegister ? "/api/register" : "/api/login";
-
-  try {
-    const res = await axios.post(
-      `https://private-journal-backend.onrender.com${endpoint}`,
-      { email, password },
-      { headers: { "Content-Type": "application/json" } } // 👈 уточним явный заголовок
-    );
-
-    if (!isRegister && res.data.token) {
-      localStorage.setItem("token", res.data.token);
-      onAuthSuccess();
+    if (!email.trim() || !password.trim()) {
+      setError("Заполните все поля");
+      return;
     }
 
-    if (isRegister) {
-      alert("Регистрация успешна! Теперь войдите.");
-      setIsRegister(false);
-    }
-  } catch (err) {
-    setError(err.response?.data?.error || "Ошибка при авторизации");
-  }
-};
+    const endpoint = isRegister ? "/api/register" : "/api/login";
 
+    try {
+      const res = await axios.post(
+        `https://private-journal-backend.onrender.com${endpoint}`,
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (!isRegister && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        onAuthSuccess();
+      }
+
+      if (isRegister) {
+        alert("Регистрация успешна! Теперь войдите.");
+        setIsRegister(false);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Ошибка при авторизации");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -46,38 +45,30 @@ export default function AuthForm({ onAuthSuccess }) {
         <h2 className="text-2xl font-semibold text-center text-indigo-600 mb-6">
           {isRegister ? "Регистрация" : "Вход"}
         </h2>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full border px-4 py-2 rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-
           <input
             type="password"
             placeholder="Пароль"
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full border px-4 py-2 rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded transition"
-          >
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+          <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">
             {isRegister ? "Зарегистрироваться" : "Войти"}
           </button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
+        <p className="text-sm text-center mt-4">
+          {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}{" "}
           <span
-            className="text-indigo-600 cursor-pointer ml-1 hover:underline"
+            className="text-indigo-600 cursor-pointer"
             onClick={() => {
               setError("");
               setIsRegister(!isRegister);
