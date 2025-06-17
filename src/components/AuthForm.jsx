@@ -12,7 +12,7 @@ export default function AuthForm({ onAuthSuccess }) {
     const endpoint = isRegister ? "/api/register" : "/api/login";
 
     try {
-      const res = await axios.post(`http://localhost:3001${endpoint}`, {
+      const res = await axios.post(`https://private-journal-backend.onrender.com${endpoint}`, {
         email,
         password,
       });

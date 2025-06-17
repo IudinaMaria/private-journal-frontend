@@ -21,7 +21,7 @@ export default function CreateEntry() {
 
     try {
       await axios.post(
-        "http://localhost:3001/api/entries",
+        "https://private-journal-backend.onrender.com/api/entries",
         { title, content: encryptedContent },
         {
           headers: {

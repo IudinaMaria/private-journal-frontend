@@ -16,7 +16,7 @@ export default function PrivateJournal() {
     if (!token) return;
 
     axios
-      .get("http://localhost:3001/api/entries", {
+      .get("https://private-journal-backend.onrender.com/api/entries", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -58,7 +58,7 @@ export default function PrivateJournal() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/entries",
+        "https://private-journal-backend.onrender.com/api/entries",
         { title: encryptedTitle, content: encryptedContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );

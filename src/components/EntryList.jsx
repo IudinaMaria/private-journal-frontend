@@ -8,7 +8,7 @@ export default function EntryList() {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/entries", {
+        const res = await axios.get("https://private-journal-backend.onrender.com/api/entries", {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },

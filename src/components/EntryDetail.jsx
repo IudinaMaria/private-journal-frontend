@@ -11,7 +11,7 @@ function EntryDetail() {
   useEffect(() => {
     const fetchEntry = async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:3001/api/entries/${id}`, {
+      const res = await axios.get(`https://private-journal-backend.onrender.com/api/entries/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEntry(res.data);
