@@ -57,6 +57,7 @@ export default function AuthForm({ onAuthSuccess }) {
             type="password"
             placeholder="Пароль"
             className="w-full border px-4 py-2 rounded"
+            autocomplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
