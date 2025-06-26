@@ -17,7 +17,7 @@ export default function EntryView() {
     const fetchEntry = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/entries/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntry(res.data);
