@@ -17,7 +17,7 @@ export default function EntryView() {
     const fetchEntry = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`https://private-journal-backend.onrender.com/api/entries/${id}`, {
+        const res = await axios.get(`https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntry(res.data);
@@ -47,7 +47,7 @@ export default function EntryView() {
   const handleDelete = async () => {
     if (!window.confirm("Вы уверены, что хотите удалить запись?")) return;
     try {
-      await axios.delete(`https://private-journal-backend.onrender.com/api/entries/${id}`, {
+      await axios.delete(`https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`, {
         headers: { Authorization: "Bearer " + localStorage.getItem("token") },
         data: { trustCode: key },
       });
@@ -61,7 +61,7 @@ export default function EntryView() {
     try {
       const encryptedContent = CryptoJS.AES.encrypt(editContent, key).toString();
       await axios.put(
-        `https://private-journal-backend.onrender.com/api/entries/${id}`,
+        `https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`,
         { title: editTitle, content: encryptedContent, trustCode: key },
         { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
       );
