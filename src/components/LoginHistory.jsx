@@ -8,7 +8,7 @@ export default function LoginHistory() {
     const fetchLogins = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/security/logins", {
+        const res = await axios.get("http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/security/logins", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLogins(res.data);

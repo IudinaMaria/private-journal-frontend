@@ -8,7 +8,7 @@ export default function EntryList() {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const res = await axios.get("https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries", {
+        const res = await axios.get("http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries", {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },

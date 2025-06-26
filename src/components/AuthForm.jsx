@@ -20,7 +20,7 @@ export default function AuthForm({ onAuthSuccess }) {
 
     try {
       const res = await axios.post(
-        `https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com${endpoint}`,
+        `http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com${endpoint}`,
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
