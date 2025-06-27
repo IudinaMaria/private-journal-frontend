@@ -1,4 +1,5 @@
-import { Auth } from 'aws-amplify';
+import * as AWS from 'aws-amplify';
+const { Auth } = AWS;
 import { useNavigate } from 'react-router-dom';
 
 export default function Header({ onLogout }) {
