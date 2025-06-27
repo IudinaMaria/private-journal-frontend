@@ -27,7 +27,7 @@ export default function CreateEntry() {
 
     try {
       await axios.post(
-        "http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries",
+        "https://api.ffdff.xyz/api/entries",
         { title, content: encryptedContent },
         {
           headers: {

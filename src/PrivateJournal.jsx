@@ -16,7 +16,7 @@ export default function PrivateJournal() {
     if (!token) return;
 
     axios
-      .get("http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries", {
+      .get("https://api.ffdff.xyz/api/entries", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -58,7 +58,7 @@ export default function PrivateJournal() {
 
     try {
       const response = await axios.post(
-        "http://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries",
+        "https://api.ffdff.xyz/api/entries",
         { title: encryptedTitle, content: encryptedContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
