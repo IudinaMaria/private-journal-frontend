@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { KMSClient, EncryptCommand } from "@aws-sdk/client-kms"; // Импортируем AWS SDK
+import CryptoJS from "crypto-js"; // Шифрование через trust-код (AES)
 
 const CreateEntry = () => {
   const [title, setTitle] = useState("");
@@ -8,23 +8,10 @@ const CreateEntry = () => {
   const [trustCode, setTrustCode] = useState("");
   const [message, setMessage] = useState("");
 
-  // Инициализация клиента KMS
-  const client = new KMSClient({ region: "us-east-1" }); // Укажите свой регион
-
-  // Функция для шифрования данных через KMS
-  const encryptData = async (plaintextData) => {
-    const params = {
-      KeyId: "arn:aws:kms:eu-north-1:020510964266:key/0d35e7fa-3f26-4ca1-a312-69c8488b9b68",
-      Plaintext: new TextEncoder().encode(plaintextData),
-    };
-
-    try {
-      const data = await client.send(new EncryptCommand(params));
-      console.log("Зашифрованные данные:", data.CiphertextBlob);
-      return data.CiphertextBlob;
-    } catch (err) {
-      console.error("Ошибка шифрования:", err);
-    }
+  // Функция шифрования trust-кодом (на клиенте, Zero Trust)
+  const encryptWithTrustCode = (plaintext, trustCode) => {
+    const ciphertext = CryptoJS.AES.encrypt(plaintext, trustCode).toString();
+    return ciphertext;
   };
 
   const handleSubmit = async (e) => {
@@ -35,19 +22,21 @@ const CreateEntry = () => {
       return;
     }
 
-    // Шифруем content с использованием AWS KMS
-    const encryptedContent = await encryptData(content);
+    // 1. Шифруем содержимое trust-кодом
+    const clientEncryptedContent = encryptWithTrustCode(content, trustCode);
 
     try {
+      // 2. Отправляем зашифрованное содержимое на сервер
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/entries`,
-        { title, content: encryptedContent },
+        { title, content: clientEncryptedContent },
         {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
         }
       );
+
       if (response.status === 201) {
         setMessage("Запись успешно создана!");
         setTitle("");
