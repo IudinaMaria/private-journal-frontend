@@ -1,18 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import CryptoJS from "crypto-js"; // Шифрование через trust-код (AES)
+import CryptoJS from "crypto-js";
 
-const CreateEntry = () => {
+export default function CreateEntry() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [trustCode, setTrustCode] = useState("");
   const [message, setMessage] = useState("");
-
-  // Функция шифрования trust-кодом (на клиенте, Zero Trust)
-  const encryptWithTrustCode = (plaintext, trustCode) => {
-    const ciphertext = CryptoJS.AES.encrypt(plaintext, trustCode).toString();
-    return ciphertext;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,46 +16,44 @@ const CreateEntry = () => {
       return;
     }
 
-    // 1. Шифруем содержимое trust-кодом
-    const clientEncryptedContent = encryptWithTrustCode(content, trustCode);
+    // Шифруем content
+    const encryptedContent = CryptoJS.AES.encrypt(content, trustCode).toString();
+
+    // Получаем токен из localStorage (для Cognito)
+    const clientId = "21tgfqv26mks41gscps8g1fi7b"; // 🔁 ЗАМЕНИ на свой реальный Cognito App Client ID
+    const lastAuthUser = localStorage.getItem(`CognitoIdentityServiceProvider.${clientId}.LastAuthUser`);
+    const accessTokenKey = `CognitoIdentityServiceProvider.${clientId}.${lastAuthUser}.accessToken`;
+    const accessToken = localStorage.getItem(accessTokenKey);
 
     try {
-      // 2. Отправляем зашифрованное содержимое на сервер
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/entries`,
-        { title, content: clientEncryptedContent },
+      await axios.post(
+        "https://private-journal-backend.onrender.com/api/entries",
+        { title, content: encryptedContent },
         {
           headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
+            Authorization: "Bearer " + accessToken,
           },
         }
       );
-
-      if (response.status === 201) {
-        setMessage("Запись успешно создана!");
-        setTitle("");
-        setContent("");
-        setTrustCode("");
-      }
+      setMessage("Запись успешно создана!");
+      setTitle("");
+      setContent("");
+      setTrustCode("");
     } catch (err) {
-      if (err.response) {
-        setMessage(`Ошибка при создании записи: ${err.response.data.error}`);
-      } else {
-        setMessage("Ошибка при создании записи.");
-      }
+      setMessage("Ошибка при создании записи.");
     }
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "20px", backgroundColor: "white", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
-      <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px", color: "#4F46E5" }}>Создать запись</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
+      <h2 className="text-2xl font-semibold mb-4">Создать запись</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
           placeholder="Заголовок"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px" }}
+          className="w-full border rounded px-4 py-2"
           required
         />
 
@@ -69,7 +61,7 @@ const CreateEntry = () => {
           placeholder="Содержимое"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px", height: "200px" }}
+          className="w-full border rounded px-4 py-2 h-40"
           required
         />
 
@@ -78,29 +70,16 @@ const CreateEntry = () => {
           placeholder="Код доверия (используется для шифрования)"
           value={trustCode}
           onChange={(e) => setTrustCode(e.target.value)}
-          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px" }}
+          className="w-full border rounded px-4 py-2"
           required
         />
 
-        <button
-          type="submit"
-          style={{
-            padding: "12px",
-            backgroundColor: "#4F46E5",
-            color: "white",
-            fontSize: "16px",
-            fontWeight: "500",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
+        <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">
           Сохранить
         </button>
 
-        {message && <p style={{ color: "#e53e3e", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>{message}</p>}
+        {message && <p className="text-sm text-gray-700 mt-2">{message}</p>}
       </form>
     </div>
   );
-};
-
-export default CreateEntry;
+}
