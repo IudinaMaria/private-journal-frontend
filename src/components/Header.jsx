@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Auth } from 'aws-amplify';
+import { Amplify, Auth } from 'aws-amplify';
 
 export default function Header({ onLogout }) {
   const navigate = useNavigate();

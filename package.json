@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "-": "^0.0.1",
+    "@aws-amplify/api": "^6.3.13",
+    "@aws-amplify/auth": "^6.13.1",
+    "@aws-amplify/core": "^6.12.1",
     "@aws-sdk/client-kms": "^3.838.0",
-    "aws-amplify": "^6.15.1",
+    "aws-amplify": "^5.3.27",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.9.0",
     "cors": "^2.8.5",
