@@ -3,17 +3,23 @@ import axios from "axios";
 
 export default function LoginHistory() {
   const [logins, setLogins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchLogins = async () => {
       try {
+        setLoading(true); // Начало загрузки
         const token = localStorage.getItem("token");
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/security/logins`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLogins(res.data);
       } catch (err) {
+        setError("Ошибка загрузки истории входов. Пожалуйста, попробуйте позже.");
         console.error("Ошибка загрузки истории входов:", err);
+      } finally {
+        setLoading(false); // Завершение загрузки
       }
     };
 
@@ -23,10 +29,17 @@ export default function LoginHistory() {
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">История входов</h2>
+      
+      {/* Загрузка или ошибка */}
+      {loading && <p className="text-gray-500">Загрузка...</p>}
+      {error && <p className="text-red-600">{error}</p>}
+      
+      {/* Если нет данных */}
+      {logins.length === 0 && !loading && !error && (
+        <p className="text-gray-500">Нет данных о входах.</p>
+      )}
+
       <ul className="space-y-4">
-        {logins.length === 0 && (
-          <li className="text-gray-500">Нет данных о входах.</li>
-        )}
         {logins.map((login, index) => (
           <li
             key={index}

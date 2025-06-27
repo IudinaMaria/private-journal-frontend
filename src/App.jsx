@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context"; // Хук для работы с авторизацией
 import AuthForm from "./components/AuthForm";
-import PrivateJournal from "./PrivateJournal";
 import Header from "./components/Header";
 import LoginHistory from "./components/LoginHistory";
 import EntryList from "./components/EntryList";
@@ -10,47 +10,65 @@ import EntryDetail from "./components/EntryDetail";
 import About from "./components/About";
 import { useState } from "react";
 
+// Защищенный маршрут, который проверяет, авторизован ли пользователь
+function ProtectedRoute({ children }) {
+  const auth = useAuth();
+  if (!auth.isAuthenticated) {
+    return <Navigate to="/" />; // Если пользователь не авторизован, перенаправляем на страницу входа
+  }
+  return children; // Если авторизован, показываем защищенную страницу
+}
+
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
+  const auth = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
+    auth.removeUser(); // Удаляем пользователя при выходе
   };
 
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
-  };
+  if (auth.isLoading) {
+    return <div>Загрузка...</div>;
+  }
+
+  if (auth.error) {
+    return <div>Ошибка: {auth.error.message}</div>;
+  }
 
   return (
     <Router>
-      {isAuthenticated && <Header onLogout={handleLogout} />}
+      {/* Заголовок будет отображаться только если пользователь авторизован */}
+      {auth.isAuthenticated && <Header onLogout={handleLogout} />}
       <Routes>
+        {/* Страница входа */}
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/about" /> : <AuthForm onAuthSuccess={handleAuthSuccess} />}
+          element={auth.isAuthenticated ? <Navigate to="/about" /> : <AuthForm />}
         />
+        {/* Защищенные маршруты */}
         <Route
           path="/entries"
-          element={isAuthenticated ? <EntryList /> : <Navigate to="/" />}
+          element={<ProtectedRoute><EntryList /></ProtectedRoute>}
         />
         <Route
           path="/create"
-          element={isAuthenticated ? <CreateEntry /> : <Navigate to="/" />}
+          element={<ProtectedRoute><CreateEntry /></ProtectedRoute>}
         />
         <Route
           path="/logins"
-          element={isAuthenticated ? <LoginHistory /> : <Navigate to="/" />}
+          element={<ProtectedRoute><LoginHistory /></ProtectedRoute>}
         />
         <Route
           path="/about"
-          element={isAuthenticated ? <About /> : <Navigate to="/" />}
+          element={<ProtectedRoute><About /></ProtectedRoute>}
         />
-        <Route path="/entries/:id" 
-        element={<EntryView />} 
+        <Route
+          path="/entries/:id"
+          element={<ProtectedRoute><EntryView /></ProtectedRoute>}
         />
-         <Route path="/entries/:id" element={<EntryDetail />} />
-
+        <Route
+          path="/entries/:id"
+          element={<ProtectedRoute><EntryDetail /></ProtectedRoute>}
+        />
       </Routes>
     </Router>
   );

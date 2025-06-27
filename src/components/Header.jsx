@@ -1,18 +1,24 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Auth } from 'aws-amplify';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header({ onLogout }) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    onLogout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await Auth.signOut();
+      localStorage.removeItem('token');
+      onLogout();
+      navigate('/');
+    } catch (err) {
+      console.error('Ошибка при выходе:', err);
+    }
   };
 
   return (
     <header className="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate("/")}>📝 Private Journal</div>
+        <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/')}>📝 Private Journal</div>
         <nav className="flex gap-4 text-sm md:text-base">
           <Link to="/entries" className="hover:underline">Мои записи</Link>
           <Link to="/create" className="hover:underline">Добавить запись</Link>
