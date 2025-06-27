@@ -1,6 +1,6 @@
-import * as AWS from 'aws-amplify';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import * as AWS from 'aws-amplify';
 
 const { Auth } = AWS;
 

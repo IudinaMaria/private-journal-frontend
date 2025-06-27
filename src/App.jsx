@@ -8,6 +8,8 @@ import EntryView from "./components/EntryView";
 import CreateEntry from "./components/CreateEntry";
 import About from "./components/About";
 import { useState } from "react";
+import './index.css';  // или import './App.css';
+import './App.css'; // Импортируем стили  
 
 // Защищенный маршрут, который проверяет, авторизован ли пользователь
 function ProtectedRoute({ children }) {
