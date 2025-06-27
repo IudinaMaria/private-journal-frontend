@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import CryptoJS from "crypto-js";
+import { KMSClient, DecryptCommand } from "@aws-sdk/client-kms"; // Импорт AWS SDK
 
-function EntryDetail() {
+// Инициализация клиента KMS
+const client = new KMSClient({ region: "us-east-1" });
+
+const EntryDetail = () => {
   const { id } = useParams();
   const [entry, setEntry] = useState(null);
   const [key, setKey] = useState("");
@@ -25,15 +28,34 @@ function EntryDetail() {
     fetchEntry();
   }, [id]);
 
-  const handleDecrypt = () => {
+  // Функция для расшифровки данных через AWS KMS
+  const decryptData = async (cipherText) => {
+    const params = {
+      CiphertextBlob: cipherText,
+    };
+
+    try {
+      const data = await client.send(new DecryptCommand(params));
+      const plaintext = new TextDecoder().decode(data.Plaintext);
+      return plaintext;
+    } catch (err) {
+      console.error("Ошибка расшифровки:", err);
+      setError("Ошибка при расшифровке записи.");
+    }
+  };
+
+  const handleDecrypt = async () => {
     if (!key) {
       setError("Введите код доверия для расшифровки.");
       return;
     }
 
     try {
-      const bytes = CryptoJS.AES.decrypt(entry.content, key);
-      const decryptedContent = bytes.toString(CryptoJS.enc.Utf8);
+      // Зашифрованный контент, получаем с сервера
+      const encryptedContent = entry.content;
+
+      // Расшифровка с использованием KMS
+      const decryptedContent = await decryptData(encryptedContent);
       if (!decryptedContent) {
         setError("Неверный код доверия.");
       } else {
@@ -75,6 +97,6 @@ function EntryDetail() {
       {decrypted && <p style={{ color: "#4F46E5", fontSize: "16px", marginTop: "20px", whiteSpace: "pre-wrap" }}>{decrypted}</p>}
     </div>
   );
-}
+};
 
 export default EntryDetail;

@@ -1,12 +1,31 @@
 import React, { useState } from "react";
 import axios from "axios";
-import CryptoJS from "crypto-js";
+import { KMSClient, EncryptCommand } from "@aws-sdk/client-kms"; // Импортируем AWS SDK
 
 const CreateEntry = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [trustCode, setTrustCode] = useState("");
   const [message, setMessage] = useState("");
+
+  // Инициализация клиента KMS
+  const client = new KMSClient({ region: "us-east-1" }); // Укажите свой регион
+
+  // Функция для шифрования данных через KMS
+  const encryptData = async (plaintextData) => {
+    const params = {
+      KeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-1234567890kl", // ARN твоего ключа
+      Plaintext: new TextEncoder().encode(plaintextData),
+    };
+
+    try {
+      const data = await client.send(new EncryptCommand(params));
+      console.log("Зашифрованные данные:", data.CiphertextBlob);
+      return data.CiphertextBlob;
+    } catch (err) {
+      console.error("Ошибка шифрования:", err);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,8 +35,8 @@ const CreateEntry = () => {
       return;
     }
 
-    // Шифруем content
-    const encryptedContent = CryptoJS.AES.encrypt(content, trustCode).toString();
+    // Шифруем content с использованием AWS KMS
+    const encryptedContent = await encryptData(content);
 
     try {
       const response = await axios.post(

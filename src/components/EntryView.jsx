@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import CryptoJS from "crypto-js";
+import { KMSClient, DecryptCommand } from "@aws-sdk/client-kms"; // Импорт AWS SDK
+
+// Инициализация клиента KMS
+const client = new KMSClient({ region: "us-east-1" });
 
 export default function EntryView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
   const [decryptedContent, setDecryptedContent] = useState("");
-  const [key, setKey] = useState("");
+  const [key, setKey] = useState(""); // Код доверия
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -35,17 +38,42 @@ export default function EntryView() {
     fetchEntry();
   }, [id]);
 
-  const handleDecrypt = () => {
+  // Функция для расшифровки данных через AWS KMS
+  const decryptData = async (cipherText) => {
+    const params = {
+      CiphertextBlob: cipherText,
+    };
+
     try {
-      const bytes = CryptoJS.AES.decrypt(entry.content, key);
-      const originalText = bytes.toString(CryptoJS.enc.Utf8);
-      if (!originalText) throw new Error();
-      setDecryptedContent(originalText);
-      setEditContent(originalText);
-      setError("");
-    } catch {
-      setError("Неверный ключ или ошибка при расшифровке");
-      setDecryptedContent("");
+      const data = await client.send(new DecryptCommand(params));
+      const plaintext = new TextDecoder().decode(data.Plaintext);
+      return plaintext;
+    } catch (err) {
+      console.error("Ошибка расшифровки:", err);
+      setError("Ошибка при расшифровке записи.");
+    }
+  };
+
+  const handleDecrypt = async () => {
+    if (!key) {
+      setError("Введите код доверия для расшифровки.");
+      return;
+    }
+
+    try {
+      // Получаем зашифрованный контент
+      const encryptedContent = entry.content;
+
+      // Расшифровываем данные с использованием KMS
+      const decryptedContent = await decryptData(encryptedContent);
+      if (!decryptedContent) {
+        setError("Неверный код доверия.");
+      } else {
+        setDecryptedContent(decryptedContent);
+        setError("");
+      }
+    } catch (err) {
+      setError("Ошибка при расшифровке записи.");
     }
   };
 
@@ -73,6 +101,7 @@ export default function EntryView() {
     }
     setLoading(true);
     try {
+      // Шифруем контент перед отправкой на сервер
       const encryptedContent = CryptoJS.AES.encrypt(editContent, key).toString();
       const token = localStorage.getItem("token");
       await axios.put(
