@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "react-oidc-context"; // Хук для работы с авторизацией
 import AuthForm from "./components/AuthForm";
 import Header from "./components/Header";
 import LoginHistory from "./components/LoginHistory";
@@ -7,65 +6,73 @@ import EntryList from "./components/EntryList";
 import EntryView from "./components/EntryView";
 import CreateEntry from "./components/CreateEntry";
 import About from "./components/About";
-import { useState } from "react";
-import './index.css';  // или import './App.css';
-import './App.css'; // Импортируем стили  
+import { useEffect, useState } from "react";
+import { Auth } from "aws-amplify";
 
-// Защищенный маршрут, который проверяет, авторизован ли пользователь
-function ProtectedRoute({ children }) {
-  const auth = useAuth();
-  if (!auth.isAuthenticated) {
-    return <Navigate to="/" />; // Если пользователь не авторизован, перенаправляем на страницу входа
+import './index.css';
+import './App.css';
+
+function ProtectedRoute({ children, isAuthenticated }) {
+  if (!isAuthenticated) {
+    return <Navigate to="/" />;
   }
-  return children; // Если авторизован, показываем защищенную страницу
+  return children;
 }
 
 export default function App() {
-  const auth = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    auth.removeUser(); // Удаляем пользователя при выходе
+  useEffect(() => {
+    Auth.currentAuthenticatedUser()
+      .then(() => {
+        setIsAuthenticated(true);
+        setLoading(false);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await Auth.signOut();
+      setIsAuthenticated(false);
+    } catch (err) {
+      console.error("Ошибка выхода:", err);
+    }
   };
 
-  if (auth.isLoading) {
-    return <div>Загрузка...</div>; // Можно улучшить, добавив анимацию или спиннер
-  }
-
-  if (auth.error) {
-    return <div>Ошибка: {auth.error.message}</div>;
-  }
+  if (loading) return <div>Загрузка...</div>;
 
   return (
     <Router>
-      {/* Заголовок будет отображаться только если пользователь авторизован */}
-      {auth.isAuthenticated && <Header onLogout={handleLogout} />}
+      {isAuthenticated && <Header onLogout={handleLogout} />}
       <Routes>
-        {/* Страница входа */}
         <Route
           path="/"
-          element={auth.isAuthenticated ? <Navigate to="/about" /> : <AuthForm />}
+          element={isAuthenticated ? <Navigate to="/about" /> : <AuthForm />}
         />
-        {/* Защищенные маршруты */}
         <Route
           path="/entries"
-          element={<ProtectedRoute><EntryList /></ProtectedRoute>}
+          element={<ProtectedRoute isAuthenticated={isAuthenticated}><EntryList /></ProtectedRoute>}
         />
         <Route
           path="/create"
-          element={<ProtectedRoute><CreateEntry /></ProtectedRoute>}
+          element={<ProtectedRoute isAuthenticated={isAuthenticated}><CreateEntry /></ProtectedRoute>}
         />
         <Route
           path="/logins"
-          element={<ProtectedRoute><LoginHistory /></ProtectedRoute>}
+          element={<ProtectedRoute isAuthenticated={isAuthenticated}><LoginHistory /></ProtectedRoute>}
         />
         <Route
           path="/about"
-          element={<ProtectedRoute><About /></ProtectedRoute>}
+          element={<ProtectedRoute isAuthenticated={isAuthenticated}><About /></ProtectedRoute>}
         />
-        {/* Используем один маршрут для EntryView */}
         <Route
           path="/entries/:id"
-          element={<ProtectedRoute><EntryView /></ProtectedRoute>}
+          element={<ProtectedRoute isAuthenticated={isAuthenticated}><EntryView /></ProtectedRoute>}
         />
       </Routes>
     </Router>
