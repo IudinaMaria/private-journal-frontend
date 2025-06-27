@@ -20,7 +20,7 @@ export default function CreateEntry() {
     const encryptedContent = CryptoJS.AES.encrypt(content, trustCode).toString();
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/entries`,
         { title, content: encryptedContent },
         {
@@ -29,25 +29,31 @@ export default function CreateEntry() {
           },
         }
       );
-      setMessage("Запись успешно создана!");
-      setTitle("");
-      setContent("");
-      setTrustCode("");
+      if (response.status === 201) {
+        setMessage("Запись успешно создана!");
+        setTitle("");
+        setContent("");
+        setTrustCode("");
+      }
     } catch (err) {
-      setMessage("Ошибка при создании записи.");
+      if (err.response) {
+        setMessage(`Ошибка при создании записи: ${err.response.data.error}`);
+      } else {
+        setMessage("Ошибка при создании записи.");
+      }
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-semibold mb-4">Создать запись</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div style={{ maxWidth: "600px", margin: "auto", padding: "20px", backgroundColor: "white", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
+      <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px", color: "#4F46E5" }}>Создать запись</h2>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <input
           type="text"
           placeholder="Заголовок"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full border rounded px-4 py-2"
+          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px" }}
           required
         />
 
@@ -55,7 +61,7 @@ export default function CreateEntry() {
           placeholder="Содержимое"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full border rounded px-4 py-2 h-40"
+          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px", height: "200px" }}
           required
         />
 
@@ -64,15 +70,26 @@ export default function CreateEntry() {
           placeholder="Код доверия (используется для шифрования)"
           value={trustCode}
           onChange={(e) => setTrustCode(e.target.value)}
-          className="w-full border rounded px-4 py-2"
+          style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "16px" }}
           required
         />
 
-        <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded">
+        <button
+          type="submit"
+          style={{
+            padding: "12px",
+            backgroundColor: "#4F46E5",
+            color: "white",
+            fontSize: "16px",
+            fontWeight: "500",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
           Сохранить
         </button>
 
-        {message && <p className="text-sm text-gray-700 mt-2">{message}</p>}
+        {message && <p style={{ color: "#e53e3e", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>{message}</p>}
       </form>
     </div>
   );

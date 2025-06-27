@@ -1,16 +1,21 @@
 import * as AWS from 'aws-amplify';
-const { Auth } = AWS;
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+
+const { Auth } = AWS;
 
 export default function Header({ onLogout }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
+      // Выход из системы с использованием AWS Amplify
       await Auth.signOut();
+      // Удаление токена из localStorage
       localStorage.removeItem('token');
+      // Вызов onLogout, чтобы обновить состояние в родительском компоненте
       onLogout();
+      // Перенаправление на главную страницу или страницу входа
       navigate('/');
     } catch (err) {
       console.error('Ошибка при выходе:', err);
@@ -20,7 +25,12 @@ export default function Header({ onLogout }) {
   return (
     <header className="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/')}>📝 Private Journal</div>
+        <div
+          className="text-2xl font-bold cursor-pointer"
+          onClick={() => navigate('/')}
+        >
+          📝 Private Journal
+        </div>
         <nav className="flex gap-4 text-sm md:text-base">
           <Link to="/entries" className="hover:underline">Мои записи</Link>
           <Link to="/create" className="hover:underline">Добавить запись</Link>

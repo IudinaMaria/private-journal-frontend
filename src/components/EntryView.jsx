@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import CryptoJS from "crypto-js";
 
 export default function EntryView() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
   const [decryptedContent, setDecryptedContent] = useState("");
   const [key, setKey] = useState("");
@@ -12,9 +13,11 @@ export default function EntryView() {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEntry = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/entries/${id}`, {
@@ -24,6 +27,8 @@ export default function EntryView() {
         setEditTitle(res.data.title);
       } catch (err) {
         setError("Ошибка при загрузке записи");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -46,37 +51,51 @@ export default function EntryView() {
 
   const handleDelete = async () => {
     if (!window.confirm("Вы уверены, что хотите удалить запись?")) return;
+    setLoading(true);
     try {
-      await axios.delete(`https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`, {
-        headers: { Authorization: "Bearer " + localStorage.getItem("token") },
-        data: { trustCode: key },
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/entries/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      window.location.href = "/entries";
+      alert("Запись удалена!");
+      navigate("/entries");
     } catch (err) {
       alert("Ошибка удаления: " + (err.response?.data?.error || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = async () => {
+    if (!key || !editContent || !editTitle) {
+      setError("Пожалуйста, заполните все поля перед редактированием.");
+      return;
+    }
+    setLoading(true);
     try {
       const encryptedContent = CryptoJS.AES.encrypt(editContent, key).toString();
+      const token = localStorage.getItem("token");
       await axios.put(
-        `https://private-journal-backend-env.eba-kam8nf3e.eu-north-1.elasticbeanstalk.com/api/entries/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/entries/${id}`,
         { title: editTitle, content: encryptedContent, trustCode: key },
-        { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Запись обновлена");
       setDecryptedContent(editContent);
       setIsEditing(false);
     } catch (err) {
       alert("Ошибка при обновлении: " + (err.response?.data?.error || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!entry) return <div className="p-4 text-gray-600">Загрузка...</div>;
+  if (loading) return <div className="p-4 text-gray-600">Загрузка...</div>;
+
+  if (!entry) return <div className="p-4 text-gray-600">Запись не найдена</div>;
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-4 bg-white rounded shadow">
+    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">{entry.title}</h2>
       <div className="mb-4">
         <label className="block mb-2 text-sm font-medium">Ключ для расшифровки:</label>
@@ -97,9 +116,7 @@ export default function EntryView() {
 
       {decryptedContent && !isEditing && (
         <>
-          <div className="bg-gray-50 p-3 border rounded text-gray-800 mb-4">
-            {decryptedContent}
-          </div>
+          <div className="bg-gray-50 p-3 border rounded text-gray-800 mb-4">{decryptedContent}</div>
           <button
             onClick={handleDelete}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mr-2"

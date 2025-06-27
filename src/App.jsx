@@ -6,7 +6,6 @@ import LoginHistory from "./components/LoginHistory";
 import EntryList from "./components/EntryList";
 import EntryView from "./components/EntryView";
 import CreateEntry from "./components/CreateEntry";
-import EntryDetail from "./components/EntryDetail";
 import About from "./components/About";
 import { useState } from "react";
 
@@ -27,7 +26,7 @@ export default function App() {
   };
 
   if (auth.isLoading) {
-    return <div>Загрузка...</div>;
+    return <div>Загрузка...</div>; // Можно улучшить, добавив анимацию или спиннер
   }
 
   if (auth.error) {
@@ -61,13 +60,10 @@ export default function App() {
           path="/about"
           element={<ProtectedRoute><About /></ProtectedRoute>}
         />
+        {/* Используем один маршрут для EntryView */}
         <Route
           path="/entries/:id"
           element={<ProtectedRoute><EntryView /></ProtectedRoute>}
-        />
-        <Route
-          path="/entries/:id"
-          element={<ProtectedRoute><EntryDetail /></ProtectedRoute>}
         />
       </Routes>
     </Router>

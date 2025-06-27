@@ -27,23 +27,28 @@ export default function LoginHistory() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">История входов</h2>
-      
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded shadow-lg">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">История входов</h2>
+
       {/* Загрузка или ошибка */}
-      {loading && <p className="text-gray-500">Загрузка...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      
+      {loading && (
+        <div className="flex justify-center items-center">
+          <div className="spinner-border animate-spin border-4 border-indigo-600 border-t-transparent w-8 h-8 rounded-full"></div>
+        </div>
+      )}
+
+      {error && <p className="text-red-600 mb-4">{error}</p>}
+
       {/* Если нет данных */}
       {logins.length === 0 && !loading && !error && (
         <p className="text-gray-500">Нет данных о входах.</p>
       )}
 
       <ul className="space-y-4">
-        {logins.map((login, index) => (
+        {logins.map((login) => (
           <li
-            key={index}
-            className="p-4 border border-gray-200 rounded bg-gray-50 hover:bg-gray-100 transition"
+            key={login._id || login.timestamp} // Используем _id или timestamp как уникальный ключ
+            className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition duration-300 ease-in-out"
           >
             <p className="text-sm text-gray-800">
               <span className="font-semibold">IP:</span> {login.ip}
