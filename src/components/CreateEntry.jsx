@@ -14,7 +14,7 @@ const CreateEntry = () => {
   // Функция для шифрования данных через KMS
   const encryptData = async (plaintextData) => {
     const params = {
-      KeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-1234567890kl", // ARN твоего ключа
+      KeyId: "arn:aws:kms:eu-north-1:102051096426:key/0d35e7fa-3f26-4ca1-a312-69c8488b9b68",
       Plaintext: new TextEncoder().encode(plaintextData),
     };
 
