@@ -48,14 +48,14 @@ export default function AuthForm({ onAuthSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
-            placeholder="Email"
+            placeholder="Email1"
             className="w-full border px-4 py-2 rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
             type="password"
-            placeholder="Пароль"
+            placeholder="Пароль1"
             className="w-full border px-4 py-2 rounded"
             autocomplete="current-password"
             value={password}
