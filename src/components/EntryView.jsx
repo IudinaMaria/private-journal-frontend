@@ -4,7 +4,7 @@ import axios from "axios";
 import { KMSClient, DecryptCommand } from "@aws-sdk/client-kms"; // Импорт AWS SDK
 
 // Инициализация клиента KMS
-const client = new KMSClient({ region: "us-east-1" });
+const client = new KMSClient({ region: "eu-north-1" });
 
 export default function EntryView() {
   const { id } = useParams();
